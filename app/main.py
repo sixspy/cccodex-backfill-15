@@ -6,6 +6,13 @@ from itsdangerous import BadSignature, URLSafeSerializer
 
 from app.config import Config
 from app.db import init_db
+from app.services.audit import (
+    coverage_directory,
+    list_ledger,
+    open_gate,
+    slice_detail,
+    verify_directory,
+)
 from app.services.errors import ServiceError
 from app.services.windows import (
     coverage_report,
@@ -119,8 +126,8 @@ class ApiWindows:
 class ApiPlan:
     async def on_post(self, req, resp, window_id):
         try:
-            require_user(req)
-            _json(resp, plan_slices(int(window_id)))
+            operator = require_user(req)
+            _json(resp, plan_slices(int(window_id), operator))
         except ServiceError as exc:
             _json(resp, {"error": exc.message}, exc.status_code)
 
@@ -137,8 +144,43 @@ class ApiSlices:
 class ApiReplay:
     async def on_post(self, req, resp, slice_id):
         try:
+            operator = require_user(req)
+            _json(resp, {"slice": replay_slice(int(slice_id), operator)})
+        except ServiceError as exc:
+            _json(resp, {"error": exc.message}, exc.status_code)
+
+
+class ApiSliceDetail:
+    async def on_get(self, req, resp, slice_id):
+        try:
             require_user(req)
-            _json(resp, {"slice": replay_slice(int(slice_id))})
+            _json(resp, slice_detail(int(slice_id)))
+        except ServiceError as exc:
+            _json(resp, {"error": exc.message}, exc.status_code)
+
+
+class ApiSliceGate:
+    async def on_post(self, req, resp, slice_id):
+        try:
+            operator = require_user(req)
+            _json(resp, open_gate(int(slice_id), operator))
+        except ServiceError as exc:
+            _json(resp, {"error": exc.message}, exc.status_code)
+
+
+class ApiLedger:
+    async def on_get(self, req, resp):
+        try:
+            require_user(req)
+            wid = req.get_param("window_id")
+            sid = req.get_param("slice_id")
+            try:
+                wid_i = int(wid) if wid not in (None, "") else None
+                sid_i = int(sid) if sid not in (None, "") else None
+            except (TypeError, ValueError):
+                _json(resp, {"error": "window_id / slice_id 无效"}, 400)
+                return
+            _json(resp, {"items": list_ledger(wid_i, sid_i)})
         except ServiceError as exc:
             _json(resp, {"error": exc.message}, exc.status_code)
 
@@ -153,10 +195,36 @@ class ApiCoverage:
 
     async def on_post(self, req, resp):
         try:
-            require_user(req)
+            operator = require_user(req)
             body = await req.get_media() or {}
             wid = int(body.get("window_id"))
-            _json(resp, {"report": coverage_report(wid)})
+            _json(resp, {"report": coverage_report(wid, operator)})
+        except ServiceError as exc:
+            _json(resp, {"error": exc.message}, exc.status_code)
+        except (TypeError, ValueError):
+            _json(resp, {"error": "window_id 无效"}, 400)
+
+
+class ApiCoverageDirectory:
+    async def on_get(self, req, resp):
+        try:
+            require_user(req)
+            wid = req.get_param("window_id")
+            try:
+                wid_i = int(wid) if wid not in (None, "") else None
+            except (TypeError, ValueError):
+                _json(resp, {"error": "window_id 无效"}, 400)
+                return
+            _json(resp, {"items": coverage_directory(wid_i)})
+        except ServiceError as exc:
+            _json(resp, {"error": exc.message}, exc.status_code)
+
+    async def on_post(self, req, resp):
+        try:
+            operator = require_user(req)
+            body = await req.get_media() or {}
+            wid = int(body.get("window_id"))
+            _json(resp, verify_directory(wid, operator))
         except ServiceError as exc:
             _json(resp, {"error": exc.message}, exc.status_code)
         except (TypeError, ValueError):
@@ -175,8 +243,12 @@ def create_app() -> falcon.asgi.App:
     app.add_route("/api/windows", ApiWindows())
     app.add_route("/api/windows/{window_id:int}/plan", ApiPlan())
     app.add_route("/api/windows/{window_id:int}/slices", ApiSlices())
+    app.add_route("/api/slices/{slice_id:int}", ApiSliceDetail())
     app.add_route("/api/slices/{slice_id:int}/replay", ApiReplay())
+    app.add_route("/api/slices/{slice_id:int}/gate", ApiSliceGate())
+    app.add_route("/api/ledger", ApiLedger())
     app.add_route("/api/coverage-reports", ApiCoverage())
+    app.add_route("/api/coverage-directory", ApiCoverageDirectory())
     app.add_static_route("/static", str(STATIC))
     return app
 

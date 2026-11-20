@@ -32,6 +32,16 @@ body {
 .brand { color: var(--accent); letter-spacing: 0.08em; font-size: 0.78rem; margin: 0; }
 h1 { margin: 0.25rem 0 0; font-size: 1.35rem; }
 .header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; }
+.header-right { display:flex; align-items:center; gap:0.6rem; }
+.reject-chip {
+  display:inline-flex; align-items:center; gap:0.35rem;
+  padding:0.28rem 0.7rem; border-radius:999px; font-size:0.8rem; font-weight:650;
+  color:#fff; background:#a3262f; border:1px solid #ff6b6b;
+  box-shadow:0 0 0 3px rgba(255,107,107,0.18);
+}
+.reject-chip.hidden { display:none; }
+.tag.ok { background:#1d4d3c; color:#8ff0c4; }
+.tag.bad { background:#4d1d24; color:#ffb3b3; border:1px solid #ff6b6b; }
 .chips { display:flex; flex-wrap:wrap; gap:0.5rem; margin: 1rem 0; }
 .chips button, button {
   border: 1px solid var(--line); background: #15233d; color: var(--ink);
@@ -48,3 +58,8 @@ h1 { margin: 0.25rem 0 0; font-size: 1.35rem; }
 .tag { display:inline-block; padding:0.1rem 0.5rem; border-radius:999px; background:#2a3f66; font-size:0.78rem; }
 label { display:block; margin: 0.65rem 0; }
 input, select { width:100%; margin-top:0.3rem; padding:0.5rem 0.65rem; border-radius:10px; border:1px solid var(--line); background:#101b30; color:var(--ink); font:inherit; }
+.slice-key { font-size:0.8rem; letter-spacing:0.02em; }
+.trail { display:grid; gap:0.45rem; max-height:420px; overflow:auto; }
+.trail p { margin:0; padding:0.5rem 0.65rem; border-left:3px solid var(--line); background:#182744; border-radius:8px; font-size:0.85rem; }
+.drawer { margin-top:1rem; border:1px solid var(--accent); }
+h4 { margin:0.9rem 0 0.4rem; font-size:0.92rem; color:var(--muted); }

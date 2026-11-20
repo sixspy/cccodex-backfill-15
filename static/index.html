@@ -13,12 +13,17 @@
         <p class="brand" id="lab-name">回灌补数台</p>
         <h1>窗口切片与覆盖对账</h1>
       </div>
-      <button type="button" id="btn-logout">退出</button>
+      <div class="header-right">
+        <span id="reject-chip" class="reject-chip hidden"></span>
+        <button type="button" id="btn-logout">退出</button>
+      </div>
     </div>
     <div class="chips">
       <button type="button" data-tab="windows" class="on">回灌窗口</button>
       <button type="button" data-tab="plan">切片计划</button>
       <button type="button" data-tab="replay">重放落库</button>
+      <button type="button" data-tab="gate">出证闸口</button>
+      <button type="button" data-tab="ledger">审计台账</button>
       <button type="button" data-tab="coverage">覆盖对账</button>
     </div>
     <p class="muted" id="msg"></p>

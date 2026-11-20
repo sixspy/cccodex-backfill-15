@@ -1,6 +1,5 @@
 import os
 
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
@@ -9,10 +8,14 @@ from app.main import create_app
 
 
 @pytest_asyncio.fixture
-async def client(tmp_path):
-    db = tmp_path / "test.db"
-    os.environ["DATABASE_PATH"] = str(db)
-    init_db(str(db))
+async def db_path(tmp_path):
+    return tmp_path / "test.db"
+
+
+@pytest_asyncio.fixture
+async def client(db_path):
+    os.environ["DATABASE_PATH"] = str(db_path)
+    init_db(str(db_path))
     app = create_app()
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://127.0.0.1") as ac:
